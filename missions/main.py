@@ -11,6 +11,7 @@ color = ColorSensor('B')
 # Initialize Left Hand
 left_motor = Motor('D')
 left_motor.set_default_speed(40)
+front_motor = Motor('F')
 
 # Initialize Motor Pair
 motor_pair = MotorPair('A', 'E')
@@ -31,6 +32,11 @@ def print_yaw(name):
 
 def print_color_sensor_stats():
     print("Reflected",color.get_reflected_light(),"Ambient",color.get_ambient_light(), "RGB", color.get_rgb_intensity())
+
+def move_cargo(height):
+    front_motor.start()
+    front_motor.run_for_degrees(height,20)
+    front_motor.stop()
 
 def wait_for_black():
     while True:
@@ -87,6 +93,14 @@ def tank_to_yaw(angle, speed):
     motor_pair.start_tank(speed, -speed)
     while True:
         if get_yaw() >= angle - 1:
+            motor_pair.stop()
+            print_yaw("Tank Yaw")
+            break
+
+def tank_to_yaw_reverse(angle, speed):
+    motor_pair.start_tank(-speed, speed)
+    while True:
+        if get_yaw() < angle + 1:
             motor_pair.stop()
             print_yaw("Tank Yaw")
             break
@@ -165,6 +179,7 @@ def initialize_x_bot():
     left_motor.start()
     left_motor.run_for_seconds(1,-10)
     left_motor.stop()
+    #front_motor.run_to_position(242)
     reset_yaw()
     
 # Mission 05: Switch engine (20 points)
@@ -192,9 +207,9 @@ def mission_03():
     print_yaw("Mission 03: After Tank Move")
     move_x_bot(-5.5,True)
     left_motor.start()
-    left_motor.run_for_seconds(1,60)
+    left_motor.run_for_seconds(0.5,60)
     # Move the right Hand forward
-    left_motor.run_for_degrees(-170,60)
+    left_motor.run_for_degrees(-160,60)
     left_motor.stop()
 
 # Mission 13: Platooning Trucks (10+10+10)
@@ -207,6 +222,7 @@ def mission_13():
     motor_pair.start()
     motor_pair.move_tank(12, 'cm', left_speed=30, right_speed=30)
     motor_pair.stop()
+    move_cargo(200)
     print_yaw("Mission 13: After moving the truck")
     move_x_bot(-12,True)
     set_position(90)
@@ -216,10 +232,12 @@ def mission_14():
     print_yaw("Mission 14: Bridge")
     s_move(10,9) #speed, radius
     set_position(90)
+    motor_pair.set_default_speed(60)
     move_x_bot(40,True)
     print_yaw("Mission 14: After First Bridge")
-    move_x_bot(-45,True)
+    move_x_bot(-49,True)
     print_yaw("Mission 14: After Second Bridge")
+    motor_pair.set_default_speed(30)
 
 # Mission 07: Unload Cargo Ship (20+10)
 def mission_07():
@@ -231,12 +249,41 @@ def mission_07():
 # Mission 08: Air Drop (20+10+10)
 def mission_08():
     print_yaw("Mission 08: Air Drop")
+    move_x_bot(-4,True)
     back_left_to_yaw(130,-20,25)
     set_position(135)
     print_yaw("Mission 08: Before slam")
     turn_left_to_yaw(45,60,16)
-    move_x_bot(10,True)
-    turn_x_bot(120,30,15)
+    move_x_bot(5,True)
+    turn_x_bot(30,30,10)
+    move_x_bot(5,True)
+
+# Mission 09: Train Tracks (20+20)
+def mission_09():
+    print_yaw("Mission 09: Train Tracks")
+    #set_position(60)
+    back_right_to_yaw(-0,-20,9) #angle, speed, radius in inches
+    move_x_bot(-9,True)
+    tank_to_yaw_reverse(-80,20) #angle, speed
+    move_x_bot(-4,True)
+    left_motor.start()
+    left_motor.run_for_seconds(1,16)
+    left_motor.stop()
+    move_x_bot(4,True)
+    left_motor.run_for_degrees(-150,60)
+    tank_to_yaw(0,20)
+
+# Mission 02: Unused Capacity (20+10)
+def mission_02():
+    print_yaw("Mission 02: Unused Capacity")
+    turn_left_to_yaw(-90,20,5)
+    set_position(-90)
+    print_yaw("Mission 02: Turned back")
+    move_x_bot(70,True)
+    s_move(10,4) #speed, radius
+    print_yaw("Mission 02: After S Move")
+    set_position(-90)
+    #move_x_bot(1000,True)
 
 # Mission 04: Transportation Journey (10+10+10)
 def mission_04():
@@ -255,17 +302,11 @@ def mission_04():
 def mission_01():
     print_yaw("Mission 01: Innovation Project Model")
 
-# Mission 02: Unused Capacity (20+10)
-def mission_02():
-    print_yaw("Mission 02: Unused Capacity")
-
 # Mission 06: Accident Avoidance (20+10)
 def mission_06():
     print_yaw("Mission 06: Accident Avoidance")
 
-# Mission 09: Train Tracks (20+20)
-def mission_09():
-    print_yaw("Mission 09: Train Tracks")
+
 
 # Mission 10: Sorting Center (20)
 def mission_10():
@@ -290,11 +331,12 @@ def mission_16():
 ###################### ROUND 1 ###########################
 
 initialize_x_bot()
-mission_05()
-mission_03()
-mission_13()
-mission_14()
-mission_07()
-mission_08()
-mission_04()
+mission_05() # switch engine
+mission_03() # unload cargo plane
+mission_13() # platooning trucks
+mission_14() # bridge closing
+mission_07() # unload cargo
+mission_08() # air drop
+mission_09() # part 1 - completing track
+#mission_02() #unused capacity and come home
 print("Time taken = ", timer.now())
