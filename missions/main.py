@@ -43,7 +43,10 @@ def move_to_black(initialDelay=0):
 
 def move_x_bot(distance, stop):
     motor_pair.start()
-    motor_pair.move_tank(distance, 'cm', left_speed=50, right_speed=50)
+    #motor_pair.move_tank(distance, 'cm', left_speed=50, right_speed=50)
+    motor_pair.set_default_speed(50)
+    motor_pair.move(distance)
+    motor_pair.set_default_speed(40)
     if stop:
         motor_pair.stop()
 
@@ -139,11 +142,12 @@ def initialize_x_bot():
     timer.reset()
     print("========================================")
     print_yaw("Initializing")
+    left_motor.set_default_speed(10)
     move_x_bot(-2,True)
+    left_motor.set_default_speed(40)
     left_motor.start()
     left_motor.run_for_seconds(1,-10)
     left_motor.stop()
-    #front_motor.run_to_position(242)
     reset_yaw()
     
 # Mission 05: Switch engine (20 points)
@@ -153,7 +157,7 @@ def mission_05():
     move_x_bot(4,True)
     set_position(0)
     print_yaw("Mission 05: Before turn")
-    turn_right_to_yaw(89,10,4.65) #angle, speed, radius in inches
+    turn_right_to_yaw(89,12,4.65) #angle, speed, radius in inches
     set_position(90)
     print_yaw("Mission 05: After turn")
     move_x_bot(-1,True)
@@ -161,7 +165,7 @@ def mission_05():
     left_motor.run_for_degrees(40,4)
     left_motor.stop()
     move_x_bot(1,True)
-    back_right_to_yaw(-40,-10,5.5) #angle, speed, radius in inches
+    back_right_to_yaw(-40,-12,5.5) #angle, speed, radius in inches
     print_yaw("Mission 05: Back to original")
 
 
@@ -169,10 +173,10 @@ def mission_05():
 def mission_03():
     print_yaw("Mission 03: Unload Cargo Plane")
     move_x_bot(-6,True)
-    tank_to_yaw(128,20) #angle, speed
+    tank_to_yaw(129,20) #angle, speed
     set_position(130)
     print_yaw("Mission 03: After Tank Move")
-    move_x_bot(-5.7,True)
+    move_x_bot(-5.8,True)
     left_motor.start()
     left_motor.run_for_seconds(0.6,60)
     # Move the right Hand forward
@@ -192,7 +196,7 @@ def mission_13():
     motor_pair.stop()
     move_cargo(200)
     print_yaw("Mission 13: After moving the truck")
-    move_x_bot(-12,True)
+    move_x_bot(-14,True)
     set_position(90)
 
 # Mission 14: Bridge (10+10)
@@ -201,10 +205,10 @@ def mission_14():
     s_move(11,9) #speed, radius
     set_position(90)
     set_position(90)
-    motor_pair.set_default_speed(60)
+    motor_pair.set_default_speed(50)
     move_x_bot(40,True)
     print_yaw("Mission 14: After First Bridge")
-    move_x_bot(-50,True)
+    move_x_bot(-49,True)
     print_yaw("Mission 14: After Second Bridge")
     motor_pair.set_default_speed(30)
 
@@ -216,7 +220,7 @@ def mission_07():
     s_move(15,8.2) #speed, radius
     set_position(90)
     print_yaw("Mission 07: After S-Move")
-    move_x_bot(21,True)
+    move_x_bot(20.6,True)
 
 # Mission 08: Air Drop (20+10+10)
 def mission_08():
@@ -225,6 +229,10 @@ def mission_08():
     set_position(90)
     back_left_to_yaw(130,-20,20)
     set_position(135)
+    left_motor.start()
+    # Move the right Hand forward
+    left_motor.run_for_degrees(55,60)
+    left_motor.stop()
     print_yaw("Mission 08: Before slam")
     turn_left_to_yaw(45,60,16)
     set_position(45)
@@ -235,8 +243,7 @@ def mission_08():
 # Mission 09: Train Tracks (20+20)
 def mission_09():
     print_yaw("Mission 09: Train Tracks")
-    #set_position(60)
-    back_right_to_yaw(-0,-20,9) #angle, speed, radius in inches
+    back_right_to_yaw(0,-20,9) #angle, speed, radius in inches
     move_x_bot(-10,True)
     tank_to_yaw_reverse(-80,20) #angle, speed
     move_x_bot(-5,True)
@@ -244,50 +251,56 @@ def mission_09():
     left_motor.start()
     left_motor.run_for_seconds(1,18)
     left_motor.stop()
-    move_x_bot(5,True)
+    move_x_bot(6,True)
     #left_motor.run_for_degrees(-150,60)
     #tank_to_yaw(0,20)
     #set_position(0)
     
 def push_train():
-    #s_move(12,7)
+    print_yaw("Push Train")
     reset_yaw()
-    move_cargo(200)
+    print_yaw("Push Train: After Yaw Reset")
+    move_cargo(300)
     turn_left_to_yaw(-60,10,4) #angle, speed radius
-    #move_x_bot(2, True)
+    # move_x_bot(0.5, True)
     turn_right_to_yaw(0,10,4)
     set_position(0)
+    print_yaw("Push Train: before stepping back")
     move_x_bot(-5, True)
     motor_pair.set_default_speed(100)
-    move_x_bot(29, True)
+    move_x_bot(30, True)
     motor_pair.set_default_speed(20)
-    move_cargo(-100)
+    print_yaw("Push Train: after the run")
+    move_cargo(-300)
     back_right_to_yaw(-45,-10,4)
     back_left_to_yaw(0,-10,4)
     set_position(0)
+    print_yaw("Push Train: back up")
     move_x_bot(-15, True)
     turn_right_to_yaw(90,10,5)
     set_position(90)
+    print_yaw("Push Train: Run to home")
     move_x_bot(50,True)
-    s_move(8,2) #speed, radius
+    s_move(8,2.5) #speed, radius
     set_position(90)
-    move_x_bot(50,True)
+    print_yaw("Push Train: After S-Move")
+    motor_pair.set_default_speed(100)
+    move_x_bot(55,True)
 
 def mission_09_2():
     print_yaw("Mission 09_2: Train Tracks 2")
-    left_motor.run_for_degrees(-90,60)
+    left_motor.run_for_degrees(-75,60)
     move_x_bot(-4,True)
-    tank_to_yaw_reverse_check_negative(-178,20)
+    tank_to_yaw_reverse_check_negative(-176,20)
     print_yaw("Mission 09_2: Before reversing")
     motor_pair.set_default_speed(-40)
     motor_pair.start()
     wait_for_seconds(2)
     motor_pair.stop()
+    turn_x_bot(10,0,-5)
     motor_pair.set_default_speed(30)
     print_yaw("Mission 09_2: After reversing")
     push_train()
-    exit()
-
 
 # Mission 02: Unused Capacity (20+10)
 def mission_02():
@@ -339,7 +352,6 @@ def mission_16():
 
 def round_one():
     initialize_x_bot()
-    #move_cargo(-200) #reset
     mission_05() # switch engine
     mission_03() # unload cargo plane
     mission_13() # platooning trucks
@@ -349,8 +361,21 @@ def round_one():
     mission_09() # part 1 - completing track
     mission_09_2() # part 2 - moving cars
     #mission_02() #unused capacity and come home
-    print("Time taken = ", timer.now())
+
+
+def test_cargo():
+    move_cargo(200) #platooning trucks
+    wait_for_seconds(5)
+    move_cargo(300) # Bay
+    wait_for_seconds(5)
+    move_cargo(-300) # Raise
+
+def reset_cargo():
+    move_cargo(-200) #3
+    wait_for_seconds(5)
+
 
 round_one()
+#move_cargo(-300)
 #push_train()
-#move_cargo(-200)
+print("Time taken = ", timer.now())
