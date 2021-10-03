@@ -30,9 +30,9 @@ def get_yaw():
 def print_yaw(name):
     print(name + ", yaw =", get_yaw())
 
-def move_cargo(height):
+def move_cargo(height, speed=20):
     front_motor.start()
-    front_motor.run_for_degrees(height,20)
+    front_motor.run_for_degrees(height,speed)
     front_motor.stop()
 
 def move_to_black(initialDelay=0):
@@ -41,10 +41,10 @@ def move_to_black(initialDelay=0):
     color.wait_until_color('black')
     motor_pair.stop()
 
-def move_x_bot(distance, stop):
+def move_x_bot(distance, stop, speed=50):
     motor_pair.start()
     #motor_pair.move_tank(distance, 'cm', left_speed=50, right_speed=50)
-    motor_pair.set_default_speed(50)
+    motor_pair.set_default_speed(speed)
     motor_pair.move(distance)
     motor_pair.set_default_speed(40)
     if stop:
@@ -138,16 +138,17 @@ def set_position(pos):
         print("Turning a bit left to set yaw from", yaw, "to", pos)
         turn_left_to_yaw(pos,4,2)
 
-def initialize_x_bot():
+def initialize_x_bot(move_hand = True):
     timer.reset()
     print("========================================")
     print_yaw("Initializing")
     left_motor.set_default_speed(10)
     move_x_bot(-2,True)
-    left_motor.set_default_speed(40)
-    left_motor.start()
-    left_motor.run_for_seconds(1,-10)
-    left_motor.stop()
+    if move_hand:
+        left_motor.set_default_speed(40)
+        left_motor.start()
+        left_motor.run_for_seconds(1,-10)
+        left_motor.stop()
     reset_yaw()
     
 # Mission 05: Switch engine (20 points)
@@ -279,13 +280,6 @@ def push_train():
     move_x_bot(-15, True)
     turn_right_to_yaw(90,10,5)
     set_position(90)
-    print_yaw("Push Train: Run to home")
-    move_x_bot(50,True)
-    s_move(8,2.5) #speed, radius
-    set_position(90)
-    print_yaw("Push Train: After S-Move")
-    motor_pair.set_default_speed(100)
-    move_x_bot(55,True)
 
 def mission_09_2():
     print_yaw("Mission 09_2: Train Tracks 2")
@@ -305,49 +299,91 @@ def mission_09_2():
 # Mission 02: Unused Capacity (20+10)
 def mission_02():
     print_yaw("Mission 02: Unused Capacity")
-    turn_left_to_yaw(-86,20,5.5)
-    set_position(-90)
-    print_yaw("Mission 02: Turned back")
-    move_x_bot(40,True)
-    s_move(17,5) #speed, radius
-    print_yaw("Mission 02: After S Move")
-    set_position(-86)
     move_x_bot(50,True)
+    s_move(8,2.5) #speed, radius
+    set_position(90)
+    print_yaw("Mission 02: After S-Move")
+    motor_pair.set_default_speed(100)
+    move_x_bot(55,True)
 
-
-
-# Mission 04: Transportation Journey (10+10+10)
-def mission_04():
-    print_yaw("Mission 04: Transportation Journey")
+## ROUND 2
+def mission_16():
+    print_yaw("Mission 16: Cargo Connect")
+    turn_left_to_yaw(-10,10,4.65) #angle, speed, radius in inches
+    move_x_bot(21,True)
+    turn_right_to_yaw(47,10,10) #angle, speed, radius in inches
+    move_x_bot(13.5,True)
+    move_x_bot(-35,True)
+    back_right_to_yaw(3,-20,5)
 
 # Mission 01: Innovation Project Model (20)
 def mission_01():
     print_yaw("Mission 01: Innovation Project Model")
+    turn_right_to_yaw(86, 12, 4)
+    set_position(90)
+    move_x_bot(48, False, 30)
+    turn_left_to_yaw(33, 12, 7)
+    move_x_bot(-3, False, 30)
+    back_left_to_yaw(88,-10,3)
+
+def home_delivery():
+    move_cargo(500)
+    move_x_bot(-5,True, 60)
+    turn_x_bot(40,60,60)
+    turn_x_bot(-40,60,60)
+
+# Mission 11: Home Delivery (20+10)
+def mission_11():
+    print_yaw("Mission 11: Home Delivery")
+    turn_right_to_yaw(120,10,3)
+    move_x_bot(12.5, True, 35)
+    turn_left_to_yaw(110,40,3)
+    set_position(94)
+    print_yaw("Mission 11: Before Delivery")
+    home_delivery() #deliver
+    move_cargo(-500,50)
+    set_position(90)
+    move_x_bot(9, True)
+    back_left_to_yaw(110,-8,2) #getting out
+    move_x_bot(-11, True, 50)
+    print_yaw("Mission 11: Backing out")
+    back_right_to_yaw(95,-8,2)
+    set_position(90)
+    
+# Mission 10: Sorting Center (20)
+def mission_10():
+    print_yaw("Mission 10: Sorting Center")
+    move_x_bot(-7, True, 50)
+    turn_left_to_yaw(50,10,8)
+    move_x_bot(30, True, 50)
+    tank_to_yaw(140,30)
 
 # Mission 06: Accident Avoidance (20+10)
 def mission_06():
     print_yaw("Mission 06: Accident Avoidance")
 
-# Mission 10: Sorting Center (20)
-def mission_10():
-    print_yaw("Mission 10: Sorting Center")
-
-# Mission 11: Home Delivery (20+10)
-def mission_11():
-    print_yaw("Mission 11: Home Delivery")
+# Mission 04: Transportation Journey (10+10+10)
+def mission_04():
+    print_yaw("Mission 04: Transportation Journey")
+    #not attempting
 
 # Mission 12: Large Delivery (20+10 + 5+5)
 def mission_12():
     print_yaw("Mission 12: Large Delivery")
+    #not attempting
 
 # Mission 15: Load Cargo (100+)
 def mission_15():
     print_yaw("Mission 15: Load Cargo")
+    #not attempting
 
-# Mission 16: Cargo Connect (5+5+20+20+10)
-def mission_16():
-    print_yaw("Mission 16: Cargo Connect")
-    
+def test_cargo():
+    move_cargo(200) #platooning trucks
+    wait_for_seconds(5)
+    move_cargo(300) # Bay
+    wait_for_seconds(5)
+    move_cargo(-300) # Raise
+
 ###################### ROUND 1 ###########################
 
 def round_one():
@@ -360,22 +396,26 @@ def round_one():
     mission_08() # air drop
     mission_09() # part 1 - completing track
     mission_09_2() # part 2 - moving cars
-    #mission_02() #unused capacity and come home
+    mission_02() #unused capacity and come home
+
+###################### ROUND 2 ###########################
+def round_two():
+    initialize_x_bot(False)
+    mission_16() # cargo connect
+
+###################### ROUND 3 ###########################
+def round_three():
+    initialize_x_bot(False)
+    mission_01() # innovation project model
+    mission_11() # home delivery
+    mission_10() # sorting center
+    mission_06() # accident avoidance - last one
 
 
-def test_cargo():
-    move_cargo(200) #platooning trucks
-    wait_for_seconds(5)
-    move_cargo(300) # Bay
-    wait_for_seconds(5)
-    move_cargo(-300) # Raise
-
-def reset_cargo():
-    move_cargo(-200) #3
-    wait_for_seconds(5)
-
-
-round_one()
-#move_cargo(-300)
+#round_one()
 #push_train()
+#round_two()
+#move_cargo(-500)
+round_three()
+
 print("Time taken = ", timer.now())
