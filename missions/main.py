@@ -6,7 +6,9 @@ from math import *
 hub=PrimeHub()
 
 # Initialize the Color Sensor
-color = ColorSensor('B')
+color_left = ColorSensor('B')
+color_right = ColorSensor('C')
+
 
 # Initialize Left Hand
 left_motor = Motor('D')
@@ -14,7 +16,7 @@ left_motor.set_default_speed(40)
 front_motor = Motor('F')
 
 # Initialize Motor Pair
-robot_speed=40
+robot_speed=30
 motor_pair = MotorPair('A', 'E')
 motor_pair.set_default_speed(robot_speed)
 motor_pair.set_stop_action('coast')
@@ -23,6 +25,11 @@ right_wheel = Motor('E')
 
 # Initialize Timer
 timer = Timer()
+
+def print_color_details():
+    print("get_ambient_light",color_right.get_ambient_light())
+    print("get_reflected_light",color_right.get_reflected_light())
+    print("get_rgb_intensity",color_right.get_rgb_intensity())
 
 def reset_yaw():
     hub.motion_sensor.reset_yaw_angle()
@@ -43,7 +50,6 @@ def reset_cargo():
     print("reset_cargo")
     front_motor.start()
     front_motor.run_for_seconds(1)
-    print("after 2s")
     front_motor.run_for_degrees(-610, 100) #-110 -200
     front_motor.stop()
 
@@ -55,24 +61,28 @@ def move_cargo(height, speed=20):
 
 def accelerate(current_speed, to_speed, time=0.5):
     increase_by=to_speed - current_speed
-    rounds=5
+    rounds=20
     for i in range(rounds,0,-1):
         motor_pair.start(speed=int(to_speed - i*increase_by/rounds))
         wait_for_seconds(time/rounds)
 
 def decelerate(current_speed, to_speed, time=0.5):
     delta=to_speed - current_speed
-    rounds=10
+    rounds=20
     for i in range(1,rounds+1,1):
         s=int(current_speed + i*delta/rounds)
         motor_pair.start(speed=s)
         wait_for_seconds(time/rounds)
-        print("i",i,"s",s)
+        #print("i",i,"s",s)
 
 def move_x_degrees(degrees):
-    start=left_wheel.get_degrees_counted()
-    while(left_wheel.get_degrees_counted() > start-degrees):
-        wait_for_seconds(0.004)
+    start=right_wheel.get_degrees_counted()
+    if degrees > 0:
+        while(right_wheel.get_degrees_counted() < start+degrees):
+            wait_for_seconds(0.004)
+    else:
+        while(right_wheel.get_degrees_counted() > start+degrees):
+            wait_for_seconds(0.004)
 
 def accelerate_to(current_speed, to_speed, time=0.5):
     rounds=5
@@ -101,11 +111,23 @@ def decelerate_to(current_speed, to_speed, time=0.5):
     else:
         motor_pair.start(to_speed)
 
-def move_to_black(initialDelay=0):
+def move_to_black(initialDelay=0, stop=True, speed=40):
+    motor_pair.set_default_speed(40)
     motor_pair.start()
     wait_for_seconds(initialDelay)
-    color.wait_until_color('black')
-    motor_pair.stop()
+    color_left.wait_until_color('black')
+    if stop:
+        motor_pair.stop()
+    motor_pair.set_default_speed(robot_speed)
+
+def move_to_white(initialDelay=0, stop=True, speed=40):
+    motor_pair.set_default_speed(40)
+    motor_pair.start()
+    wait_for_seconds(initialDelay)
+    color_left.wait_until_color('white')
+    if stop:
+        motor_pair.stop()
+    motor_pair.set_default_speed(robot_speed)
 
 def move_x_bot(distance, stop, speed=50):
     motor_pair.start()
@@ -198,17 +220,22 @@ def set_position(pos):
     yaw=get_yaw()
     if yaw < pos - 1:
         print("Turning a bit right to set yaw from", yaw, "to", pos)
-        turn_right_to_yaw(pos,4,2) #angle, speed, radius
+        tank_to_yaw(pos,4)
+        #turn_right_to_yaw(pos,4,2) #angle, speed, radius
     elif yaw > pos + 1:
         print("Turning a bit left to set yaw from", yaw, "to", pos)
-        turn_left_to_yaw(pos,4,2)
+        tank_to_yaw_reverse(pos,4)
+        #turn_left_to_yaw(pos,4,2)
 
 def initialize_x_bot(move_hand = True):
     timer.reset()
     print("========================================")
     print_yaw("Initializing")
+    #move_x_bot(-2,True,60)
+    motor_pair.start(0,-60)
+    wait_for_seconds(1)
+    motor_pair.stop()
     left_motor.set_default_speed(10)
-    move_x_bot(-2,True)
     if move_hand:
         left_motor.set_default_speed(40)
         left_motor.start()
@@ -221,73 +248,95 @@ def initialize_x_bot(move_hand = True):
 # Mission 05: Switch engine (20 points)
 def mission_05():
     print_yaw("Mission 05: Switch engine")
-    move_to_black(1)
-    move_x_bot(4,True,15)
-    set_position(-1)
-    print_yaw("Mission 05: Before turn")
-    turn_right_to_yaw(89,12,4.65) #angle, speed, radius in inches
-    set_position(90)
-    print_yaw("Mission 05: After turn")
-    move_x_bot(-1,True,15)
+    move_to_black(1,False,40)
+    move_x_bot(3.5,True)
+    #decelerate(40,1,0.3)
+    print_yaw("Mission 05: At Black Line")
+    turn_right_to_yaw(88,12,4.8) #angle, speed, radius in inches
+    #set_position(90)
+    print_yaw("Mission 05: About to switch engine")
     left_motor.start()
     left_motor.run_for_degrees(40,4)
+    left_motor.run_for_degrees(-15,4)
     left_motor.stop()
-    move_x_bot(1,True)
-    back_right_to_yaw(-40,-12,5.5) #angle, speed, radius in inches
-    print_yaw("Mission 05: Back to original")
-
+    back_right_to_yaw(40,-12,5.9)
+    print_yaw("Mission 05: Before backing up into unfilled cargo")
+    # move_x_bot(-21,True)
+    accelerate(0,-robot_speed,0.2)
+    move_x_degrees(-400)
+    decelerate(-robot_speed,0,0.2)
+    print_yaw("Mission 05: After backing up")    
+    # back_right_to_yaw(-40,-12,5.9) #angle, speed, radius in inches
 
 # Mission 03: Unload Cargo Plane (20+10+10)
 def mission_03():
     print_yaw("Mission 03: Unload Cargo Plane")
-    move_x_bot(-6,True)
-    tank_to_yaw(129,20) #angle, speed
-    set_position(130)
-    print_yaw("Mission 03: After Tank Move")
-    move_x_bot(-5.8,True)
+    turn_right_to_yaw(132,12,4.2)
+    # tank_to_yaw(130,20) #angle, speed
+    # print_yaw("Mission 03: After Tank Move")
     left_motor.start()
     left_motor.run_for_seconds(0.6,60)
     # Move the right Hand forward
     left_motor.run_for_degrees(-155,60)
     left_motor.stop()
-
+    accelerate(0,robot_speed,0.2)
+    #move_x_degrees(100)
+    decelerate(robot_speed,0,0.2)
+    print_yaw("Mission 03: Unload Cargo Done")
+    print_left("Mission 03")
 
 # Mission 13: Platooning Trucks (10+10+10)
 def mission_13():
-    set_position(136)
+    set_position(137)
     print_yaw("Mission 13: Platooning Trucks")
-    turn_left_to_yaw(90,20,17)  #angle, speed, radius in inches
+    move_to_black(0,True,40)
+    tank_to_yaw_reverse(95,9)
     set_position(90)
+    #turn_left_to_yaw(90,20,17)  #angle, speed, radius in inches
+    #set_position(90)
     print_yaw("Mission 13: After turning")
-    motor_pair.start()
-    motor_pair.move_tank(10.5, 'cm', left_speed=30, right_speed=30)
-    motor_pair.stop()
+    accelerate(0,robot_speed,0.2)
+    move_x_degrees(390) #170
+    decelerate(robot_speed,0,0.3)
     move_cargo(200)
     print_yaw("Mission 13: After moving the truck")
-    move_x_bot(-14,True)
+    accelerate(0,-robot_speed,0.2)
+    move_x_degrees(-200)
+    decelerate(-robot_speed,0,0.3)
     set_position(90)
+    print_left("Mission 13")
 
 # Mission 14: Bridge (10+10)
 def mission_14():
     print_yaw("Mission 14: Bridge")
-    s_move(11,10) #speed, radius
+    #s_move(11,8.8) #speed, radius
+    turn_left_to_yaw(45,11,8.75)
+    turn_right_to_yaw(90,11,8.75)
     print_yaw("Mission 14: After S-Move")
     set_position(90)
-    move_x_bot(38, True, 36)
+    accelerate(0, 80, 0.2)
+    move_x_degrees(500)
+    print_yaw("Mission 14: Before Decelerate")
+    decelerate(80,0,0.5)
     print_yaw("Mission 14: After First Bridge")
     set_position(90)
-    move_x_bot(-49,True, 40)
+    accelerate(0, -80, 0.2)
+    move_x_degrees(-600)
+    decelerate(-80,0,0.5)
+    set_position(90)
     print_yaw("Mission 14: After Second Bridge")
+    print_left("Mission 14")
 
 # Mission 07: Unload Cargo Ship (20+10)
 def mission_07():
     set_position(90)
-    set_position(90)
     print_yaw("Mission 07: Unload Cargo Ship")
-    s_move(15,8.5) #speed, radius
+    #s_move(15,8.7) #speed, radius
+    turn_left_to_yaw(45,15,7.8)
+    turn_right_to_yaw(90,15,7.8)
     set_position(90)
     print_yaw("Mission 07: After S-Move")
-    move_x_bot(20.6,True)
+    move_x_bot(17,True)
 
 # Mission 08: Air Drop (20+10+10)
 def mission_08():
@@ -295,16 +344,16 @@ def mission_08():
     move_x_bot(-4,True)
     set_position(90)
     back_left_to_yaw(130,-20,20)
-    set_position(135)
+    set_position(134)
     left_motor.start()
     # Move the right Hand forward
     left_motor.run_for_degrees(55,60)
     left_motor.stop()
     print_yaw("Mission 08: Before slam")
-    turn_left_to_yaw(45,60,16)
+    turn_left_to_yaw(45,50,18)
     set_position(45)
     move_x_bot(5.4,True)
-    turn_x_bot(30,30,10)
+    turn_x_bot(30,30,12) 
     move_x_bot(5,True)
 
 # Mission 09: Train Tracks (20+20)
@@ -322,13 +371,12 @@ def mission_09():
     #left_motor.run_for_degrees(-150,60)
     #tank_to_yaw(0,20)
     #set_position(0)
-    return
     
 def push_train():
     print_yaw("Push Train")
     reset_yaw()
     print_yaw("Push Train: After Yaw Reset")
-    move_cargo(300)
+    move_cargo(270)
     turn_left_to_yaw(-60,10,4) #angle, speed radius
     # move_x_bot(0.5, True)
     turn_right_to_yaw(0,10,4)
@@ -366,12 +414,11 @@ def mission_09_2():
 # Mission 02: Unused Capacity (20+10)
 def mission_02():
     print_yaw("Mission 02: Unused Capacity")
-    move_x_bot(50,True)
-    s_move(10,4) #speed, radius
-    set_position(90)
-    print_yaw("Mission 02: After S-Move")
-    motor_pair.set_default_speed(100)
-    move_x_bot(50,True,100)
+    accelerate(0, 80, 0.2)
+    move_x_degrees(700)
+    decelerate(80,0,0.5)
+    turn_left_to_yaw(70,10,4)
+    move_x_bot(90,True,100)
 
 ## ROUND 2
 def mission_16():
@@ -454,17 +501,18 @@ def test_cargo():
     move_cargo(-300) # Raise
 
 ###################### ROUND 1 ###########################
-
-def round_one():
+def round_zero():
     initialize_x_bot()
     reset_cargo()
+
+def round_one():
     mission_05() # switch engine
     mission_03() # unload cargo plane
     mission_13() # platooning trucks
     mission_14() # bridge closing
-    return
     mission_07() # unload cargo ship
     mission_08() # air drop
+    return
     mission_09() # part 1 - completing track
     mission_09_2() # part 2 - moving cars
     mission_02() #unused capacity and come home
@@ -482,33 +530,21 @@ def round_three():
     mission_10() # sorting center
     mission_06() # accident avoidance - last one
 
-
-# pos=get_yaw()
-# print_yaw("================Test: before move")
-# move_x_bot(50, True, 40)
-# print_yaw("Test: after move")
-# set_position(pos)
-# move_x_bot(-50,True, 40)
-# print_yaw("Test: after move back")
-
-# move_cargo(-300)
-# exit()
-#round_one()
-#push_train()
-# round_two()
-# round_three()
-
 def test_accel_decel():
     initialize_x_bot()
     yaw=get_yaw()
     print_yaw("start")
-    print_left("start")
+    print_right("start")
     accelerate(0,80,0.2)
-    print_left("80 speed")
+    print_right("80 speed")
     move_x_degrees(700)
-    print_left("about to slow down")
-    decelerate_to(80,0,0.5)
-    print_left("stopped")
+    print_right("about to slow down")
+    decelerate(80,0,0.5)
+    accelerate(0,-80,0.2)
+    print_right("back")
+    move_x_degrees(-700)
+    decelerate(-80,0,0.5)
+    print_right("stopped")
     print_yaw("end")
     if yaw == get_yaw():
         print("TEST PASS")
@@ -516,6 +552,24 @@ def test_accel_decel():
         print("TEST FAIL")
 
 print("-------START-------")
-test_accel_decel()
+#test_accel_decel()
+
+#move_to_black(0)
+#round_zero()
+round_one()
+#mission_07()
+# print_color_details()
+#push_train()
+#mission_02()
+# move_cargo(-10)
+
+# round_two()
+# round_three()
+
+# while True:
+#     wait_for_seconds(1)
+#     if hub.left_button.was_pressed():
+#         print_color_details();
+
 print("Time taken = ", timer.now())
 
