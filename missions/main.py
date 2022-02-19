@@ -26,6 +26,7 @@ right_wheel = Motor('E')
 # Initialize Timer
 timer = Timer()
 
+#Prints Current Color Detected By The Right Sensor
 def print_color_details():
     print("get_ambient_light",color_right.get_ambient_light())
     print("get_reflected_light",color_right.get_reflected_light())
@@ -46,6 +47,7 @@ def print_left(name):
 def print_right(name):
     print(name + ", right =", right_wheel.get_degrees_counted())
 
+#Moves Forklift To Default Height
 def reset_cargo():
     print("reset_cargo")
     front_motor.start()
@@ -53,12 +55,13 @@ def reset_cargo():
     front_motor.run_for_degrees(-610, 100) #-110 -200
     front_motor.stop()
 
+#Moves Forklift to Given Height
 def move_cargo(height, speed=20):
     front_motor.start()
     front_motor.run_for_degrees(height,speed)
     front_motor.stop()
 
-
+#Accelerates From Current to Target Speed In Given Time
 def accelerate(current_speed, to_speed, time=0.5):
     increase_by=to_speed - current_speed
     rounds=20
@@ -66,6 +69,7 @@ def accelerate(current_speed, to_speed, time=0.5):
         motor_pair.start(speed=int(to_speed - i*increase_by/rounds))
         wait_for_seconds(time/rounds)
 
+#Decelerates From Current to Target Speed In Given Time
 def decelerate(current_speed, to_speed, time=0.5):
     delta=to_speed - current_speed
     rounds=20
@@ -75,6 +79,7 @@ def decelerate(current_speed, to_speed, time=0.5):
         wait_for_seconds(time/rounds)
         #print("i",i,"s",s)
 
+#Moves X-Bot Given Degrees
 def move_x_degrees(degrees):
     start=right_wheel.get_degrees_counted()
     if degrees > 0:
@@ -84,33 +89,7 @@ def move_x_degrees(degrees):
         while(right_wheel.get_degrees_counted() > start+degrees):
             wait_for_seconds(0.004)
 
-def accelerate_to(current_speed, to_speed, time=0.5):
-    rounds=5
-    s = current_speed
-    for i in range(rounds,0,-1):
-        s=int(to_speed + (s-to_speed)/exp(i/rounds))
-        motor_pair.start(speed=s)
-        wait_for_seconds(time/rounds)
-        print("i",i,"s",s)
-    motor_pair.start(to_speed)
-
-def decelerate_to(current_speed, to_speed, time=0.5):
-    rounds=5
-    s = current_speed
-    for i in range(1,rounds+1,1):
-        s=int(to_speed + (s-to_speed)/exp(i/rounds))
-        if s == 0:
-            motor_pair.stop()
-            break
-        else:
-            motor_pair.start(speed=s)
-            wait_for_seconds(time/rounds)
-        print("i",i,"s",s)
-    if to_speed == 0:
-        motor_pair.stop()
-    else:
-        motor_pair.start(to_speed)
-
+#Moves X-Bot Forever Until Left Sensor Detects Black Line
 def move_to_black(initialDelay=0, stop=True, speed=40):
     motor_pair.set_default_speed(40)
     motor_pair.start()
@@ -120,6 +99,7 @@ def move_to_black(initialDelay=0, stop=True, speed=40):
         motor_pair.stop()
     motor_pair.set_default_speed(robot_speed)
 
+#Moves X-Bot Forever Until Right Sensor Detects Black Line
 def move_to_black2(initialDelay=0, stop=True, speed=40):
     motor_pair.set_default_speed(40)
     motor_pair.start()
@@ -129,6 +109,7 @@ def move_to_black2(initialDelay=0, stop=True, speed=40):
         motor_pair.stop()
     motor_pair.set_default_speed(robot_speed)
 
+#Moves X-Bot Forever Until Left Sensor Detects White
 def move_to_white(initialDelay=0, stop=True, speed=40):
     motor_pair.set_default_speed(40)
     motor_pair.start()
@@ -138,6 +119,7 @@ def move_to_white(initialDelay=0, stop=True, speed=40):
         motor_pair.stop()
     motor_pair.set_default_speed(robot_speed)
 
+#Moves X-Bot Given Distance And Speed
 def move_x_bot(distance, stop, speed=50):
     motor_pair.start()
     motor_pair.set_default_speed(speed)
@@ -145,26 +127,30 @@ def move_x_bot(distance, stop, speed=50):
     motor_pair.set_default_speed(robot_speed)
     if stop:
         motor_pair.stop()
-
+        
+#Turns X-Bot Given Degrees And Speed
 def turn_x_bot(degrees, left_speed, right_speed):
     motor_pair.start()
     motor_pair.move_tank(degrees, 'degrees', left_speed, right_speed)
     motor_pair.stop()
-
+    
+#Turns X-Bot Using Both Wheels Forward
 def tank_to_yaw(angle, speed):
     motor_pair.start_tank(speed, -speed)
     while True:
         if get_yaw() >= angle - 1: 
             motor_pair.stop()
             break
-    
+            
+#Turns X-Bot Using Both Wheels Backwards To The Left
 def tank_to_yaw_reverse(angle, speed):
     motor_pair.start_tank(-speed, speed)
     while True:
         if get_yaw() < angle + 2:
             motor_pair.stop()
             break
-
+            
+#Turns X-Bot Using Both Wheels Backwards To The Right
 def tank_to_yaw_reverse_check_negative(angle, speed):
     if get_yaw() < 0:
         angle = -abs(angle)
@@ -176,6 +162,7 @@ def tank_to_yaw_reverse_check_negative(angle, speed):
             motor_pair.stop()
             break
 
+#Turns X-Bot To The Right
 def turn_right_to_yaw(angle, speed, radius):
     ratio = 1 + (20 * 7 / (22 * radius))
     left_speed = int(speed * ratio)
@@ -186,6 +173,7 @@ def turn_right_to_yaw(angle, speed, radius):
             motor_pair.stop()
             break
 
+#Turns X-Bot To The Right Backwards
 def back_right_to_yaw(angle, speed, radius):
     ratio = 1 + (20 * 7 / (22 * radius))
     left_speed = int(speed * ratio)
@@ -196,6 +184,7 @@ def back_right_to_yaw(angle, speed, radius):
             motor_pair.stop()
             break
 
+#Turns X-Bot To The Left
 def turn_left_to_yaw(angle, speed, radius):
     ratio = 1 + (20 * 7 / (22 * radius))
     right_speed = int(speed * ratio)
@@ -206,6 +195,7 @@ def turn_left_to_yaw(angle, speed, radius):
             motor_pair.stop()
             break
 
+#Turns X-Bot To The Left Backwards
 def back_left_to_yaw(angle, speed, radius):
     ratio = 1 + (20 * 7 / (22 * radius))
     right_speed = int(speed * ratio)
@@ -215,16 +205,19 @@ def back_left_to_yaw(angle, speed, radius):
             motor_pair.stop()
             break
 
+#Turns X-Bot In The Shape Of An S
 def s_move(speed, radius):
     yaw=get_yaw()
     turn_left_to_yaw(yaw-45,speed,radius)
     turn_right_to_yaw(yaw,speed,radius)
 
+#Turns X-Bot In The Shape Of An S Backwards
 def s_move_reverse(speed, radius):
     yaw=get_yaw()
     back_left_to_yaw(90-yaw,-speed,radius)
     back_right_to_yaw(yaw,-speed,radius)
 
+#Turns X-Bot To The Given Position
 def set_position(pos):
     yaw=get_yaw()
     if yaw < pos - 1:
@@ -236,6 +229,7 @@ def set_position(pos):
         tank_to_yaw_reverse(pos,4)
         #turn_left_to_yaw(pos,4,2)
 
+#Initializes X-Bot 
 def initialize_x_bot(move_hand = True):
     timer.reset()
     print("========================================")
@@ -383,7 +377,8 @@ def mission_09():
     #left_motor.run_for_degrees(-150,60)
     #tank_to_yaw(0,20)
     #set_position(0)
-    
+
+#Pushes The Train Across The Tracks
 def push_train():
     print_yaw("Push Train")
     reset_yaw()
@@ -407,7 +402,8 @@ def push_train():
     move_x_bot(-15, True)
     turn_right_to_yaw(90,10,5)
     set_position(90)
-    
+
+#Maneuvers X-Bot Into The Position To Push The Train
 def mission_09_2():
     print_yaw("Mission 09_2: Train Tracks 2")
     left_motor.run_for_degrees(-75,60)
@@ -423,6 +419,7 @@ def mission_09_2():
     print_yaw("Mission 09_2: After reversing")
     push_train()
 
+#Returns The X-Bot To The Home Area
 def go_home():
     print_yaw("Go Home")
     accelerate(0, 80, 0.2)
@@ -432,6 +429,7 @@ def go_home():
     move_x_bot(72,True,100)
 
 ## ROUND 2
+#Old Function
 def mission_16():
     print_yaw("Mission 16: Cargo Connect")
     turn_left_to_yaw(-10,10,4.65) #angle, speed, radius in inches
@@ -459,12 +457,6 @@ def mission_01():
     move_x_bot(-3.3, False, 30)
     back_left_to_yaw(88,-10,3)
 
-def home_delivery():
-    move_cargo(300, 100) #move cargo closer to floor
-    move_x_bot(-5,True, 60)
-    turn_x_bot(40,60,60)
-    turn_x_bot(-40,60,60)
-
 # Mission 11: Home Delivery (20+10)
 def mission_11():
     print_yaw("Mission 11: Home Delivery")
@@ -474,7 +466,6 @@ def mission_11():
     set_position(94)
     print_yaw("Mission 11: Before Delivery")
     move_x_bot(5,True)
-    #home_delivery() #deliver
     move_cargo(300, 100)
     #set_position(90)
     #move_x_bot(9, True,20)
