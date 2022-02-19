@@ -250,6 +250,7 @@ def initialize_x_bot(move_hand = True):
         left_motor.run_for_seconds(1,-10)
         left_motor.stop()
     reset_yaw()
+    left_motor.set_degrees_counted(0)
     left_wheel.set_degrees_counted(0)
     right_wheel.set_degrees_counted(0)
     
@@ -266,7 +267,8 @@ def mission_05():
     print_yaw("Mission 05: About to switch engine")
     left_motor.start()
     left_motor.run_for_degrees(40,4)
-    left_motor.run_for_degrees(-15,4)
+    left_motor.run_for_degrees(-14,4)
+    #left_motor.run_to_position(250)
     left_motor.stop()
     back_right_to_yaw(40,-12,5.9)
     print_yaw("Mission 05: Before backing up into unfilled cargo")
@@ -286,8 +288,9 @@ def mission_03():
     left_motor.start()
     left_motor.run_for_seconds(0.6,60)
     # Move the right Hand forward
-    left_motor.run_for_degrees(-155,60)
+    left_motor.run_for_degrees(-150,60)
     left_motor.stop()
+    #left_motor.run_to_position(250)
     accelerate(0,robot_speed,0.2)
     #move_x_degrees(100)
     decelerate(robot_speed,0,0.2)
@@ -409,7 +412,7 @@ def mission_09_2():
     print_yaw("Mission 09_2: Train Tracks 2")
     left_motor.run_for_degrees(-75,60)
     move_x_bot(-1,True,20)
-    tank_to_yaw_reverse_check_negative(-176,18)
+    tank_to_yaw_reverse_check_negative(-178,18)
     print_yaw("Mission 09_2: Before reversing")
     motor_pair.set_default_speed(-40)
     motor_pair.start()
@@ -514,7 +517,7 @@ def mission_06():
     turn_left_to_yaw(-90,10,5)
     set_position(-90)
     #move_to_black2(0,True,1)
-    move_x_bot(2, True, 4)
+    move_x_bot(2, True, 3)
 
 # Mission 04: Transportation Journey (10+10+10)
 def mission_04():
@@ -599,7 +602,7 @@ print("-------START-------")
 
 #move_to_black(0)
 #round_zero()
-round_one()
+#round_one()
 #mission_07()
 # print_color_details()
 
@@ -607,7 +610,8 @@ round_one()
 #mission_02()
 # move_cargo(-500)
 
-
+#round_zero()
+round_one()
 #round_two()
 #round_three()
 
