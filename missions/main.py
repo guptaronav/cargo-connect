@@ -185,7 +185,9 @@ def back_right_to_yaw(angle, speed, radius):
             break
 
 #Turns X-Bot To The Left
-def turn_left_to_yaw(angle, speed, radius):
+def 
+
+(angle, speed, radius):
     ratio = 1 + (20 * 7 / (22 * radius))
     right_speed = int(speed * ratio)
     motor_pair.start_tank(speed, right_speed)
@@ -481,17 +483,10 @@ def mission_06():
     move_x_bot(2, True, 3)
 
 
-def test_cargo():
-    move_cargo(200) #platooning trucks
-    wait_for_seconds(5)
-    move_cargo(300) # Bay
-    wait_for_seconds(5)
-    move_cargo(-300) # Raise
-
 ###################### ROUND 1 ###########################
 def round_zero():
-    initialize_x_bot()
-    reset_cargo()
+    initialize_x_bot() # rest yaw, motors, get ready
+    reset_cargo() # reset forklift position
 
 def round_one():
     mission_05() # switch engine
@@ -506,20 +501,21 @@ def round_one():
 
 ###################### ROUND 2 ###########################
 def round_two():
-    reset_yaw()
+    reset_yaw() # reset gyro yaw
     mission_16_new() # cargo connect
-    move_cargo(-200)
+    move_cargo(-200) # move forklit to right position
 
 ###################### ROUND 3 ###########################
 def round_three():
-    timer.reset()
-    reset_yaw()
-    left_wheel.set_degrees_counted(0)
-    right_wheel.set_degrees_counted(0)
+    reset_yaw() # reset gyro yaw
+    left_wheel.set_degrees_counted(0) # reset left wheel
+    right_wheel.set_degrees_counted(0) # reset right wheel
     mission_01() # innovation project model
     mission_11() # home delivery
     mission_06() # accident avoidance - last one
 
+###################### Test Cases ###########################
+# Test Acceleration and Deceleration 
 def test_accel_decel():
     initialize_x_bot()
     yaw=get_yaw()
@@ -540,9 +536,39 @@ def test_accel_decel():
         print("TEST PASS")
     else:
         print("TEST FAIL")
-
-print("-------START-------")
-
+        
+# Test Forklift Move
+def test_cargo():
+    move_cargo(200) # Platooning trucks
+    wait_for_seconds(5)
+    move_cargo(300) # Forklift move down by 300
+    wait_for_seconds(5)
+    move_cargo(-300) # Raise back up
+    
+# Test Robot Left Turn 
+def test_turn_left_to_yaw()
+    reset_yaw() # reset gyro yaw
+    print_yaw("start") # should print 0
+    turn_left_to_yaw(50,10,5) # Angle, Speed, Radius
+    yaw=get_yaw() 
+    print_yaw("end") # should print -50
+    if yaw == -50:
+        print("TEST PASS")
+    else:
+        print("TEST FAIL")
+    
+# Test Robot Right Turn 
+def test_turn_right_to_yaw()
+    reset_yaw() # reset gyro yaw
+    print_yaw("start") # should print 0
+    turn_right_to_yaw(50,10,5) # Angle, Speed, Radius
+    yaw=get_yaw() 
+    print_yaw("end") # should print 50
+    if yaw == 50:
+        print("TEST PASS")
+    else:
+        print("TEST FAIL")
+    
 #round_zero()
 round_one()
 #round_two()
